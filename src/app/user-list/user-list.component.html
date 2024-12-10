@@ -1,6 +1,72 @@
-<h2>User List</h2>
-<ul>
-  <li *ngFor="let user of users">
-    <strong>{{ user.username }}</strong> - {{ user.email }} - {{ user.comment }}
-  </li>
-</ul>
+<div class="user-management-container">
+  <div class="user-list-section">
+    <h1 class="page-title">用户列表</h1>
+    
+    <div class="user-grid">
+      <div *ngFor="let user of users" class="user-card">
+        <img 
+          [src]="user.avatar ? ('http://localhost:8080/' + user.avatar) : 'avatar/alex.jpg'" 
+          alt="{{ user.username }}'s avatar" 
+          class="user-avatar"
+        >
+        <div class="user-info">
+          <h3>{{ user.username }}</h3>
+          <p>{{ user.email }}</p>
+          <p>{{ user.comment }}</p>
+          <button 
+            class="delete-button" 
+            (click)="deleteUser(user.username)"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="add-user-section">
+    <h1 class="page-title">添加新用户</h1>
+    
+    <form class="add-user-form" (ngSubmit)="addUser()">
+      <div class="form-group">
+        <input 
+          type="text" 
+          [(ngModel)]="newUser.username" 
+          name="username" 
+          placeholder="用户名" 
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <input 
+          type="email" 
+          [(ngModel)]="newUser.email" 
+          name="email" 
+          placeholder="邮箱" 
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <input 
+          [(ngModel)]="newUser.comment" 
+          name="comment" 
+          placeholder="评论"
+        >
+      </div>
+
+      <div class="form-group file-upload">
+        <input 
+          type="file" 
+          (change)="onFileSelected($event)" 
+          accept="image/*"
+        >
+      </div>
+
+      <button type="submit" class="submit-button">
+        添加用户
+      </button>
+    </form>
+  </div>
+</div>
