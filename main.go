@@ -1,6 +1,7 @@
 package main
 
 import (
+	"angular/webpage"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -49,6 +50,16 @@ func fetchContentFromURL(url string, client *resty.Client) (string, error) {
 	}
 
 	return body, nil
+}
+
+func getUrls(c *gin.Context) {
+	//url := "http://google.com"
+	url := c.Query("url")
+	url = "http://www." + url + ".com"
+	content, _ := webpage.GetVisibleContent(url)
+	ErrorLogger.Error(url)
+	ErrorLogger.Error("123")
+	c.JSON(http.StatusOK, gin.H{"content": content})
 }
 
 func fetchFromWebsites(w http.ResponseWriter, r *http.Request) {
@@ -229,7 +240,7 @@ func main() {
 	r.GET("/users", getUsers)
 	r.POST("/users", addUser)
 	r.DELETE("/users/:username", deleteUser)
-
+	r.GET("/getUrl", getUrls)
 	http.HandleFunc("/fetch-websites", fetchFromWebsites)
 
 	if err := r.Run(":8080"); err != nil {
@@ -239,6 +250,7 @@ func main() {
 
 func InitLogger() {
 	ErrorLogger = logrus.New()
+	ErrorLogger.SetReportCaller(true)
 	ErrorLogger.SetFormatter(&logrus.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05.000"})
 	ErrorLogger.SetOutput(os.Stdout)
 	ErrorLogger.SetLevel(logrus.ErrorLevel)
