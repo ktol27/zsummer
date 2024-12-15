@@ -56,9 +56,10 @@ func getUrls(c *gin.Context) {
 	//url := "http://google.com"
 	url := c.Query("url")
 	url = "http://www." + url + ".com"
-	content, _ := webpage.GetVisibleContent(url)
-	ErrorLogger.Error(url)
-	ErrorLogger.Error("123")
+	content, err := webpage.GetVisibleContent(url)
+	if err != nil {
+		ErrorLogger.Error(err)
+	}
 	c.JSON(http.StatusOK, gin.H{"content": content})
 }
 
