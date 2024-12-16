@@ -4,9 +4,13 @@ import (
 	"angular/Db2"
 	"angular/LOG"
 	"angular/api"
+	"angular/restypage"
+	_ "angular/restypage"
+	"angular/tongbu"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"net/http"
 )
 
 //type RequestBody struct {
@@ -87,7 +91,25 @@ func main() {
 	r.GET("/users", api.GetUsers)
 	r.POST("/users", api.AddUser)
 	r.DELETE("/users/:username", api.DeleteUser)
-	r.GET("/getUrl", api.GetUrls)
+	//r.GET("/getUrl", api.GetUrls)
+	r.POST("/urls/fetch", restypage.FetchFromWebsites) // 更语义化的 URL
+	r.POST("/urls/fetching", func(c *gin.Context) {
+		var requestBody tongbu.RequestBody
+		if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "请求体无效，请提供 {\"urls\": [\"url1\", \"url2\"]} 格式的 JSON 数据",
+				"details": err.Error(),
+			})
+			return
+		}
+
+		results, responseTimes, totalDuration := tongbu.FetchContentFromURLs(requestBody.Urls)
+		c.JSON(http.StatusOK, gin.H{
+			"results":        results,
+			"response_times": responseTimes,
+			"total_duration": totalDuration,
+		})
+	})
 	//http.HandleFunc("/fetch-websites", fetchFromWebsites)
 
 	if err := r.Run(":8080"); err != nil {
