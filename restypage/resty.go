@@ -23,12 +23,13 @@ type TimeResponse struct {
 
 // create a request to fetch content from multiple urls
 func fetchContentFromURLs(urls []string) ([]ResponseBody, TimeResponse) {
-	client := resty.New().SetTimeout(10 * time.Second)
+	client := resty.New()
 	var results []ResponseBody
 	var times []float64
 	resultCh := make(chan ResponseBody, len(urls))
 	timesCh := make(chan float64, len(urls))
 
+	starTime := time.Now()
 	// send requests based on concurrency level /use GORoutine
 	for _, url := range urls {
 		go fetchSingleURL(client, url, resultCh, timesCh)
@@ -40,6 +41,9 @@ func fetchContentFromURLs(urls []string) ([]ResponseBody, TimeResponse) {
 		times = append(times, <-timesCh)
 	}
 
+	totalDuration := time.Since(starTime).Seconds()
+
+	log.Printf("total duration is %.2f s", totalDuration)
 	return results, TimeResponse{Times: times}
 }
 

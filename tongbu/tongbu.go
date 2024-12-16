@@ -43,7 +43,7 @@ func FetchFromWebsites(c *gin.Context) {
 
 // FetchContentFromURLs fetches content from given URLs and returns the results along with response times
 func FetchContentFromURLs(urls []string) ([]ResponseBody, []ResponseTime, float64) {
-	client := resty.New().SetTimeout(10 * time.Second) //set timeout to 10 seconds
+	client := resty.New() // create a new Resty client
 	var results []ResponseBody
 	var responseTimes []ResponseTime
 	totalDuration := 0.0 //record total duration
