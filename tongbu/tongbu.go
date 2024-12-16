@@ -1,7 +1,9 @@
 package tongbu
 
 import (
+	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -21,6 +23,24 @@ type ResponseTime struct {
 	Time float64 `json:"time"` // save response time in seconds
 }
 
+func FetchFromWebsites(c *gin.Context) {
+	var requestBody RequestBody
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			//"error":   "请求体无效，请提供 {\"urls\": [\"url1\", \"url2\"]} 格式的 JSON 数据",
+			//"details": err.Error(),
+		})
+		return
+	}
+
+	results, responseTimes, totalDuration := FetchContentFromURLs(requestBody.Urls)
+	c.JSON(http.StatusOK, gin.H{
+		"results":        results,
+		"response_times": responseTimes,
+		"total_duration": totalDuration,
+	})
+}
+
 // FetchContentFromURLs fetches content from given URLs and returns the results along with response times
 func FetchContentFromURLs(urls []string) ([]ResponseBody, []ResponseTime, float64) {
 	client := resty.New().SetTimeout(10 * time.Second) //set timeout to 10 seconds
@@ -30,7 +50,9 @@ func FetchContentFromURLs(urls []string) ([]ResponseBody, []ResponseTime, float6
 
 	for _, url := range urls {
 		startTime := time.Now()
+
 		resp, err := client.R().Get(url)
+
 		duration := time.Since(startTime).Seconds()
 		totalDuration += duration
 

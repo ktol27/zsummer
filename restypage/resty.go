@@ -21,6 +21,7 @@ type TimeResponse struct {
 	Times []float64 `json:"times"`
 }
 
+// create a request to fetch content from multiple urls
 func fetchContentFromURLs(urls []string) ([]ResponseBody, TimeResponse) {
 	client := resty.New().SetTimeout(10 * time.Second)
 	var results []ResponseBody
@@ -28,7 +29,7 @@ func fetchContentFromURLs(urls []string) ([]ResponseBody, TimeResponse) {
 	resultCh := make(chan ResponseBody, len(urls))
 	timesCh := make(chan float64, len(urls))
 
-	// 启动并发请求
+	// send requests based on concurrency level /use GORoutine
 	for _, url := range urls {
 		go fetchSingleURL(client, url, resultCh, timesCh)
 	}
@@ -42,10 +43,12 @@ func fetchContentFromURLs(urls []string) ([]ResponseBody, TimeResponse) {
 	return results, TimeResponse{Times: times}
 }
 
+// fetch content from multiple urls
+
 func FetchFromWebsites(c *gin.Context) {
 	var requestBody RequestBody
 
-	// 绑定请求体中的 JSON 数据到结构体
+	//Bind the JSON data in the request body to the structure
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			//"error":   "请求体无效，请提供 {\"urls\": [\"url1\", \"url2\"]} 格式的 JSON 数据",
@@ -61,11 +64,17 @@ func FetchFromWebsites(c *gin.Context) {
 	})
 }
 
-func fetchSingleURL(client *resty.Client, url string, resultCh chan<- ResponseBody, timesCh chan<- float64) {
+func fetchSingleURL(
+	client *resty.Client,
+	url string,
+	resultCh chan<- ResponseBody,
+	timesCh chan<- float64) {
+
 	startTime := time.Now() // 记录开始时间
 	log.Printf("开始请求 URL: %s", url)
 
 	resp, err := client.R().Get(url)
+	//
 	elapsedTime := time.Since(startTime).Seconds() // 计算响应时间（秒）
 
 	if err != nil {
