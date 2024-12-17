@@ -38,12 +38,13 @@ func init() {
 	db = connectDB()
 }
 
-// 从 url_list 表中读取所有 URL
-
-func getURLsFromDB() ([]struct {
+type URLData struct {
 	ID  int
 	URL string
-}, error) {
+}
+
+// 从 url_list 表中读取所有 URL
+func getURLsFromDB() ([]URLData, error) {
 	query := `SELECT id, url FROM url_list`
 	rows, err := db.Query(query)
 	if err != nil {
